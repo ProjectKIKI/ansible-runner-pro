@@ -116,10 +116,10 @@
         line: "{{ item }}"
         state: present
       with_items:
-        - "192.168.3.128 node1.example.com node1"
-        - "192.168.0.75 node2.example.com node2"
-        - "192.168.1.38 node3.example.com node3"
-        - "192.168.1.130 storage.example.com storage"
+        - "10.10.10.22 node1.example.com node1"
+        - "10.10.10.74 node2.example.com node2"
+        - "10.10.10.138 node3.example.com node3"
+        - "10.10.10.25 storage.example.com storage"
 
 - name: 컨트롤러 노드에서 Kubernetes 초기화
   hosts: controller
