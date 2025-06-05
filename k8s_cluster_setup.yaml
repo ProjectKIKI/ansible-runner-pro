@@ -116,10 +116,10 @@
         line: "{{ item }}"
         state: present
       with_items:
-        - "10.0.1.20 node1.example.com node1"
-        - "10.0.1.254 node2.example.com node2"
-        - "10.0.3.248 node3.example.com node3"
-        - "10.0.0.218 storage.example.com storage"
+        - "10.10.10.87 node1.example.com node1"
+        - "10.0.3.232 node2.example.com node2"
+        - "10.0.2.232 node3.example.com node3"
+        - "10.0.3.150 storage.example.com storage"
 
 - name: 컨트롤러 노드에서 Kubernetes 초기화
   hosts: controller
@@ -139,31 +139,31 @@
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
 
-    - name: Check if helm is already installed
-      stat:
-        path: /usr/local/bin/helm
-      register: helm_stat
+    - name: Install tar (required by unarchive)
+      dnf:
+        name: tar
+        state: present
+      become: yes
 
     - name: Download pre-built helm tarball
       get_url:
         url: https://get.helm.sh/helm-v3.14.4-linux-amd64.tar.gz
         dest: /tmp/helm.tar.gz
         mode: '0644'
-      register: helm_dl
-      when: not helm_stat.stat.exists
+      register: helm_pkg
 
     - name: Extract helm binary
       unarchive:
         src: /tmp/helm.tar.gz
         dest: /tmp
         remote_src: yes
-      when: not helm_stat.stat.exists
+      when: helm_pkg.changed    
 
     - name: Install helm to /usr/local/bin
       command: install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
       args:
-        creates: /usr/local/bin/helm         
-      when: not helm_stat.stat.exists
+        creates: /usr/local/bin/helm
+
 
     - name: Flannel 네트워크 설치 (Helm 사용)
       shell: |
