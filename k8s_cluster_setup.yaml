@@ -139,14 +139,17 @@
         cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
         chown $(id -u):$(id -g) $HOME/.kube/config
 
-    - name: Helm 설치
-      shell: |
-        dnf install git tar -y
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        mkdir ~/bin
-        sh get_helm.sh
+    - name: Extract helm binary
+      unarchive:
+        src: /tmp/helm.tar.gz
+        dest: /tmp
+        remote_src: yes
+      when: helm_dl.changed   # 이미 내려받았으면 스킵
+
+    - name: Install helm to /usr/local/bin
+      command: install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
       args:
-        executable: /bin/bash
+        creates: /usr/local/bin/helm   # idempotent
 
     - name: Flannel 네트워크 설치 (Helm 사용)
       shell: |
