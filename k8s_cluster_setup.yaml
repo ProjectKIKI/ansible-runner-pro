@@ -116,10 +116,10 @@
         line: "{{ item }}"
         state: present
       with_items:
-        - "10.10.10.87 node1.example.com node1"
-        - "10.0.3.232 node2.example.com node2"
-        - "10.0.2.232 node3.example.com node3"
-        - "10.0.3.150 storage.example.com storage"
+        - "10.0.2.179 node1.example.com node1"
+        - "10.0.3.73 node2.example.com node2"
+        - "10.0.1.101 node3.example.com node3"
+        - "10.0.3.211 storage.example.com storage"
 
 - name: 컨트롤러 노드에서 Kubernetes 초기화
   hosts: controller
@@ -207,7 +207,7 @@
           kubeadm join {{ controller_ip }}:6443 --token {{ global_kubeadm_token }} \
           --discovery-token-ca-cert-hash sha256:{{ global_ca_cert_hash }}
       vars:
-        controller_ip: "192.168.2.201"
+        controller_ip: "192.168.2.137"
 
 - name: 컴퓨트 노드 클러스터 조인
   hosts: compute
