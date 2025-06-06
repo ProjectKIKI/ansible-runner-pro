@@ -164,7 +164,6 @@
       args:
         creates: /usr/local/bin/helm
 
-
     - name: Flannel 네트워크 설치 (Helm 사용)
       shell: |
         kubectl create ns kube-flannel --dry-run=client -o yaml | kubectl apply -f -
@@ -301,24 +300,49 @@
         state: stopped
         enabled: false
 
+    - name: Install tar (required by unarchive)
+      dnf:
+        name: tar
+        state: present
+      become: yes
+
+    - name: Download pre-built helm tarball
+      get_url:
+        url: https://get.helm.sh/helm-v3.14.4-linux-amd64.tar.gz
+        dest: /tmp/helm.tar.gz
+        mode: '0644'
+      register: helm_pkg
+
+    - name: Extract helm binary
+      unarchive:
+        src: /tmp/helm.tar.gz
+        dest: /tmp
+        remote_src: yes
+      when: helm_pkg.changed    
+
+    - name: Install helm to /usr/local/bin
+      command: install -m 0755 /tmp/linux-amd64/helm /usr/local/bin/helm
+      args:
+        creates: /usr/local/bin/helm
+
     - name: CSI Driver NFS Helm 저장소 추가
       shell: helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
       environment:
-        PATH: "{{ ansible_env.HOME }}/bin:{{ ansible_env.PATH }}"
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
       args:
         executable: /bin/bash
 
     - name: CSI Driver NFS 설치
       shell: helm install csi-driver-nfs csi-driver-nfs/csi-driver-nfs --namespace kube-system --version v4.9.0
       environment:
-        PATH: "{{ ansible_env.HOME }}/bin:{{ ansible_env.PATH }}"
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
       args:
         executable: /bin/bash
 
     - name: Helm 설치된 차트 목록 확인
       shell: helm list --namespace kube-system
       environment:
-        PATH: "{{ ansible_env.HOME }}/bin:{{ ansible_env.PATH }}"
+        PATH: "/usr/local/bin:{{ ansible_env.PATH }}"
       args:
         executable: /bin/bash
       register: helm_list
